@@ -13,7 +13,6 @@ fr = lambda a: (f'{a}')
 fonts = lambda a:("Inter ExtraBold", a * -1,'bold')
 
 chosen_piece = ''
-piece_chosen = False
 clicknum = 0
 
 images = {"B": PhotoImage(file=rf"{cwd}\sprites\B.png"),
@@ -48,12 +47,11 @@ def reset_color():
             grid[i][j].configure(bg="saddle brown") if (i+j)%2 else grid[i][j].configure(bg="bisque")
 
 def move_piece(x,y):
-    global clicknum,chosen_piece,piece_chosen
+    global clicknum,chosen_piece
     if not clicknum:
         if b.is_piece(x,y):
             clicknum=1
             chosen_piece = b.get_piece(x,y)
-            piece_chosen = TRUE
             for (i,j) in chosen_piece.get_moves(b):
                 grid[i][j].configure(bg = 'light gray')
             return
@@ -71,14 +69,12 @@ def move_piece(x,y):
                 return
             clicknum=0
             chosen_piece=''
-            piece_chosen = False
             return
         else:
             messagebox.showerror("ERROR", "NOT IN MOVES LIST") 
             reset_color()
             clicknum = 0
             chosen_piece = ''
-            piece_chosen = False
             return
     
 
