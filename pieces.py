@@ -327,116 +327,36 @@ class piece:
         return self.piece if self.c else self.piece.lower()+'_'
         
 def create_pieces():# this function is obsolete
-    global B, BN, BN_, BP, BP_, BQ, BQ_, BR, BR_, B_, EMPTY,K, K_, N, NB, NB_, NP, NP_, NQ, NQ_, NR, NR_, N_, P, PB, PB_, PN, PN_, PQ, PQ_, PR, PR_, P_, Q, QB, QB_, QN, QN_, QP, QP_, QR, QR_, Q_, R, RB, RB_, RN, RN_, RP, RP_, RQ, RQ_, R_,KNOOK
+    global B, B_, EMPTY,K, K_, N, N_, P, P_, Q, Q_, R, R_,KNOOK
     cwd = os.getcwd()
     EMPTY = PhotoImage(file=rf"{cwd}\sprites\empty.png")
     B = PhotoImage(file=rf"{cwd}\sprites\B.png")
-    BN = PhotoImage(file=rf"{cwd}\sprites\BN.png")
-    BP = PhotoImage(file=rf"{cwd}\sprites\BP.png")
-    BQ = PhotoImage(file=rf"{cwd}\sprites\BQ.png")
-    BR = PhotoImage(file=rf"{cwd}\sprites\BR.png")
     B_ = PhotoImage(file=rf"{cwd}\sprites\b_.png")
-    BN_ = PhotoImage(file=rf"{cwd}\sprites\BN_.png")
-    BP_ = PhotoImage(file=rf"{cwd}\sprites\bp_.png")
-    BQ_ = PhotoImage(file=rf"{cwd}\sprites\bq_.png")
-    BR_ = PhotoImage(file=rf"{cwd}\sprites\br_.png")    
     K = PhotoImage(file=rf"{cwd}\sprites\K.png")
     K_ = PhotoImage(file=rf"{cwd}\sprites\k_.png")
     N = PhotoImage(file=rf"{cwd}\sprites\N.png")
-    NB = PhotoImage(file=rf"{cwd}\sprites\NB.png")
-    NB_ = PhotoImage(file=rf"{cwd}\sprites\Nb_.png")
-    NP = PhotoImage(file=rf"{cwd}\sprites\NP.png")
-    NP_ = PhotoImage(file=rf"{cwd}\sprites\Np_.png")
-    NQ = PhotoImage(file=rf"{cwd}\sprites\NQ.png")
-    NQ_ = PhotoImage(file=rf"{cwd}\sprites\Nq_.png")
-    NR = PhotoImage(file=rf"{cwd}\sprites\NR.png")
-    NR_ = PhotoImage(file=rf"{cwd}\sprites\Nr_.png")
     N_ = PhotoImage(file=rf"{cwd}\sprites\N_.png")
     P = PhotoImage(file=rf"{cwd}\sprites\P.png")
-    PB = PhotoImage(file=rf"{cwd}\sprites\PB.png")
-    PB_ = PhotoImage(file=rf"{cwd}\sprites\pb_.png")
-    PN = PhotoImage(file=rf"{cwd}\sprites\PN.png")
-    PN_ = PhotoImage(file=rf"{cwd}\sprites\pN_.png")
-    PQ = PhotoImage(file=rf"{cwd}\sprites\PQ.png")
-    PQ_ = PhotoImage(file=rf"{cwd}\sprites\pq_.png")
-    PR = PhotoImage(file=rf"{cwd}\sprites\PR.png")
-    PR_ = PhotoImage(file=rf"{cwd}\sprites\pr_.png")
     P_ = PhotoImage(file=rf"{cwd}\sprites\p_.png")
     Q = PhotoImage(file=rf"{cwd}\sprites\Q.png")
-    QB = PhotoImage(file=rf"{cwd}\sprites\QB.png")
-    QB_ = PhotoImage(file=rf"{cwd}\sprites\qb_.png")
-    QN = PhotoImage(file=rf"{cwd}\sprites\QN.png")
-    QN_ = PhotoImage(file=rf"{cwd}\sprites\qN_.png")
-    QP = PhotoImage(file=rf"{cwd}\sprites\QP.png")
-    QP_ = PhotoImage(file=rf"{cwd}\sprites\qp_.png")
-    QR = PhotoImage(file=rf"{cwd}\sprites\QR.png")
-    QR_ = PhotoImage(file=rf"{cwd}\sprites\qr_.png")
     Q_ = PhotoImage(file=rf"{cwd}\sprites\q_.png")
     R = PhotoImage(file=rf"{cwd}\sprites\R.png")
-    RB = PhotoImage(file=rf"{cwd}\sprites\RB.png")
-    RB_ = PhotoImage(file=rf"{cwd}\sprites\rb_.png")
-    RN = PhotoImage(file=rf"{cwd}\sprites\RN.png")
-    RN_ = PhotoImage(file=rf"{cwd}\sprites\rN_.png")
-    RP = PhotoImage(file=rf"{cwd}\sprites\RP.png")
-    RP_ = PhotoImage(file=rf"{cwd}\sprites\rp_.png")
-    RQ = PhotoImage(file=rf"{cwd}\sprites\RQ.png")
-    RQ_ = PhotoImage(file=rf"{cwd}\sprites\rq_.png")
     R_ = PhotoImage(file=rf"{cwd}\sprites\r_.png")
     KNOOK = PhotoImage(file=rf"{cwd}\sprites\knook.png")
 
 def choose_piece(p):
     create_pieces()
     if p == "B": return B
-    elif p == "BN": return BN
-    elif p == "bn_": return BN_
-    elif p == "BP": return BP
-    elif p == "bp_": return BP_
-    elif p == "BQ": return BQ
-    elif p == "bq_": return BQ_
-    elif p == "BR": return BR
-    elif p == "br_": return BR_
     elif p == "b_": return B_
     elif p == "K": return K
     elif p == "k_": return K_
     elif p == "N": return N
-    elif p == "NB": return NB
-    elif p == "nb_": return NB_
-    elif p == "NP": return NP
-    elif p == "np_": return NP_
-    elif p == "NQ": return NQ
-    elif p == "nq_": return NQ_
-    elif p == "NR": return NR
-    elif p == "nr_": return NR_
     elif p == "n_": return N_
     elif p == "P": return P
-    elif p == "PB": return PB
-    elif p == "pb_": return PB_
-    elif p == "PN": return PN
-    elif p == "pn_": return PN_
-    elif p == "PQ": return PQ
-    elif p == "pq_": return PQ_
-    elif p == "PR": return PR
-    elif p == "pr_": return PR_
     elif p == "p_": return P_
     elif p == "Q": return Q
-    elif p == "QB": return QB
-    elif p == "qb_": return QB_
-    elif p == "QN": return QN
-    elif p == "qn_": return QN_
-    elif p == "QP": return QP
-    elif p == "qp_": return QP_
-    elif p == "QR": return QR
-    elif p == "qr_": return QR_
     elif p == "q_": return Q_
     elif p == "R": return R
-    elif p == "RB": return RB
-    elif p == "rb_": return RB_
-    elif p == "RN": return RN
-    elif p == "rn_": return RN_
-    elif p == "RP": return RP
-    elif p == "rp_": return RP_
-    elif p == "RQ": return RQ
-    elif p == "rq_": return RQ_
     elif p == "r_": return R_
     elif p== "KNOOK": return KNOOK
     else: return EMPTY
