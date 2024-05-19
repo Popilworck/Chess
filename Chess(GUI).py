@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
 from pieces import bored,piece,update_all,choose_piece
-
-
+import os
+cwd = os.getcwd()
 window = Tk()
 window.configure(bg='black')
 window.wm_attributes('-transparentcolor', 'forest green')
@@ -14,18 +14,30 @@ fonts = lambda a:("Inter ExtraBold", a * -1,'bold')
 
 chosen_piece = ''
 piece_chosen = False
+clicknum = 0
 
+images = {"B": PhotoImage(file=rf"{cwd}\sprites\B.png"),
+"B_" : PhotoImage(file=rf"{cwd}\sprites\b_.png"),
+'K' : PhotoImage(file=rf"{cwd}\sprites\K.png"),
+'K_': PhotoImage(file=rf"{cwd}\sprites\k_.png"),
+'N' : PhotoImage(file=rf"{cwd}\sprites\N.png"),
+'N_': PhotoImage(file=rf"{cwd}\sprites\N_.png"),
+'P': PhotoImage(file=rf"{cwd}\sprites\P.png"),
+'P_': PhotoImage(file=rf"{cwd}\sprites\p_.png"),
+'Q': PhotoImage(file=rf"{cwd}\sprites\Q.png"),
+'Q_': PhotoImage(file=rf"{cwd}\sprites\q_.png"),
+'R' : PhotoImage(file=rf"{cwd}\sprites\R.png"),
+'R_': PhotoImage(file=rf"{cwd}\sprites\r_.png"),
+'KNOOK':PhotoImage(file=rf"{cwd}\sprites\knook.png")}
 def construct():
     for i in range(8):
         for j in range(8):
-            btn= Button(window,font=("Inter ExtraBold", 20 * -1,"bold"),)
+            btn= Button(window,font=("Inter ExtraBold", 20 * -1,"bold"),command= lambda x=i,y=j:move_piece(x,y))
             btn.configure(bg="saddle brown") if (i+j)%2 else btn.configure(bg="bisque")
             if b.is_piece(i,j):
-                knook =  choose_piece(b.get_piece(i,j).get_image())
-                btn.configure(image =knook,command= lambda x=i,y=j:move_color(x,y))
+                knook =  images[(b.get_piece(i,j).get_image())]
+                btn.configure(image =knook,)
                 btn.image = knook
-            else:
-                btn.configure(command= lambda x=i,y=j:empty_sqaure(x,y))
             btn.place(relx=o(j*107+350),rely=p(i*107),width=110,height=110)
             grid[i][j] = btn
     Button(window,image=choose_piece("KNOOK"),command= lambda: window.destroy()).place(relx=o(1470),rely=p(0))
@@ -35,31 +47,40 @@ def reset_color():
         for j in range(8):
             grid[i][j].configure(bg="saddle brown") if (i+j)%2 else grid[i][j].configure(bg="bisque")
 
-def empty_sqaure(x=0,y=0):
-    global piece_chosen,chosen_piece
-    if piece_chosen:
-        if (x,y) in chosen_piece.moves:
+def move_piece(x,y):
+    global clicknum,chosen_piece,piece_chosen
+    if not clicknum:
+        if b.is_piece(x,y):
+            clicknum=1
+            chosen_piece = b.get_piece(x,y)
+            piece_chosen = TRUE
+            for (i,j) in chosen_piece.get_moves(b):
+                grid[i][j].configure(bg = 'light gray')
+            return
+        else:
+            reset_color()
+            clicknum = 0
+            return
+    else:
+        if (x,y) in chosen_piece.get_moves(b):
             b.move(chosen_piece,x,y)
-            piece_chosen=''
-            chosen_piece = False
             construct()
             if b.is_mate()[0] and b.move_count>2:
                 messagebox.showinfo("CHECKMATE", f"CHECKMATE. {b.is_mate()[1]} WINS")
                 window.destroy()
                 return
+            clicknum=0
+            chosen_piece=''
+            piece_chosen = False
+            return
         else:
             messagebox.showerror("ERROR", "NOT IN MOVES LIST") 
             reset_color()
-    else: reset_color()
-
-def move_color(x,y):
-    reset_color()
-    p = b.get_piece(x,y)
-    for i in p.get_moves(b):
-        grid[i[0]][i[1]].configure(bg='light gray')
-    global piece_chosen,chosen_piece
-    chosen_piece = p
-    piece_chosen = True
+            clicknum = 0
+            chosen_piece = ''
+            piece_chosen = False
+            return
+    
 
 
 b = bored()
