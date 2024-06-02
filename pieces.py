@@ -30,9 +30,6 @@ class bored:
         self.forced_moves=[] # moves which the en passanter can make?
         self.matew,self.mateb=[],[]#list of king moves
         self.ccb,self.ccw = False, False
-
-    """DO NOT TOUCH ZONE"""
-#----------------------------------------------------------------------------------------------------------------------------------
     
     def print(self): #prints the board in a readable format
         print()
@@ -228,7 +225,7 @@ class bored:
             return(True,"STALEMATE, GAME DRAWN (BLACK STALEMATE)")
         else:
             return (False,"NOT STALEMATE")
-#----------------------------------------------------------------------------------------------------------------------------------
+
 
 class piece:
     
@@ -242,8 +239,6 @@ class piece:
         self.put_moves_2(board)
         #self.k = (7,4) if self.c else (0,4)
 
-    """ DO NOT TOUCH ZONE"""
-#----------------------------------------------------------------------------------------------------------------------------------
 
     def promote(self,a): 
         self.piece = a
@@ -378,7 +373,6 @@ class piece:
     def get_image(self):
         return self.piece if self.c else self.piece+'_'
     
-#----------------------------------------------------------------------------------------------------------------------------------
 
     def put_moves_2(self,board):
         self.put_moves(board) #all moves possible have been put, even illegal moves
