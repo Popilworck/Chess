@@ -1,7 +1,6 @@
 import os,fuckit as fr
 from tkinter import *
 import temp
-# check put_moves_2 function
 def valid(x,y):
     return (0<=x and x<=7 and y<=7 and y>=0) 
 
