@@ -442,21 +442,21 @@ def create_pieces():# this function is obsolete
 
 def choose_piece(p):
     create_pieces()
-    #exec(f'return({p.upper()})')
-    if p == "B": return B
-    elif p == "b_": return B_
-    elif p == "K": return K
-    elif p == "k_": return K_
-    elif p == "N": return N
-    elif p == "n_": return N_
-    elif p == "P": return P
-    elif p == "p_": return P_
-    elif p == "Q": return Q
-    elif p == "q_": return Q_
-    elif p == "R": return R
-    elif p == "r_": return R_
-    elif p== "KNOOK": return KNOOK
-    else: return EMPTY
+    match p:
+        case "B": return B
+        case "b_": return B_
+        case "K": return K
+        case "k_" : return K_
+        case "N": return N
+        case "n_": return N_
+        case "P": return P
+        case "p_": return P_
+        case "Q": return Q
+        case "q_": return Q_
+        case "R": return R
+        case "r_": return R_
+        case _: return EMPTY
+
 
 b = bored()
 
