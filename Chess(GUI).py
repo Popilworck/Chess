@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
 from pieces import bored,piece,update_all,choose_piece
-#fix king's move functions and castling
 import os
 cwd = os.getcwd()
 window = Tk()
