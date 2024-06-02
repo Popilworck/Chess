@@ -1,90 +1,141 @@
-import os
+import os,fuckit as fr
 from tkinter import *
 import temp
-
+# check put_moves_2 function
 def valid(x,y):
     return (0<=x and x<=7 and y<=7 and y>=0) 
 
 def update_all(board):
     for i in board.get_bl()+board.get_wl():
         i.put_moves_2(board)
-        board.add_moves(i,i.c)
+        
+def game_over(board ):
+    if board.is_mate()[0]:
+        return board.is_mate()
+    elif  board.is_stalemate()[0]:
+        return board.is_stalemate()
+    else:
+        return False
 
 class bored:
 
     def __init__(self) -> None:
         self.b = [['.' for i in range(8)] for k in range(8)]
         self.move_count = 0
-        self.whitelist,self.blacklist = [],[]
-        self.whitemoves, self.blackmoves = [],[]
-        self.captured_w, self.captured_b = [],[]
-        self.wk,self.bk = (7,4),(0,4)
-        self.forced = 0
-        self.forced_piece = ''
-        self.forced_moves=[]
-        self.matew,self.mateb=[],[]
+        self.whitelist,self.blacklist = {},{}#dict of pieces:piece.moves for white and black
+        self.whitemoves, self.blackmoves = [],[] # list of all possible moves for white and black
+        self.captured_w, self.captured_b = [],[]# list of captured white and black pieces
+        self.wk,self.bk = (7,4),(0,4) #locations of white and black kings
+        self.forced = 0 #en passant check
+        self.forced_piece = '' #piece which is going to be en passanted
+        self.forced_moves=[] # moves which the en passanter can make?
+        self.matew,self.mateb=[],[]#list of king moves
 
-    def is_mate(self):
-        return (not (len(self.matew) and len(self.mateb)), ("WHITE" if len(self.matew) else "BLACK"))
-
-    def set_piece(self,piece,x,y):
-        self.b[x][y] = piece
-
-    def clear_square(self,x,y):
-        self.b[x][y] = '.'
-
-    def print(self):
+    """DO NOT TOUCH ZONE"""
+#----------------------------------------------------------------------------------------------------------------------------------
+    
+    def print(self): #prints the board in a readable format
         print()
         for i in self.b:
             for j in i:
                 print(j,end=' | ')
             print()
-
-    def get_piece(self,x,y):
+        
+    def is_piece(self,x,y): # returns True if piece at x,y 
+        return  self.b[x][y] != '.' 
+    
+    def get_piece(self,x,y): # returns the piece at x,y
         return(self.b[x][y])
     
-    def is_piece(self,x,y):
-        return False if self.b[x][y] == '.' else True
+    def set_piece(self,piece,x,y):# puts piece at x,y
+        self.b[x][y] = piece
 
-    def wlbl(self, a, c,d=1):
-        if d:   self.whitelist.extend(a) if c else self.blacklist.extend(a)
-        else:
-            if c:
-                self.whitelist = a
-            else:
-                self.blacklist = a
+    def get_wl(self): # returns the list of white pieces
+        return list(self.whitelist.keys())
     
-    def get_wl(self):
-        return self.whitelist
+    def get_bl(self): # returns the list of black pieces
+        return list(self.blacklist.keys())
     
-    def get_bl(self):
-        return self.blacklist
-    
-    def capture(self,piece):
-        print(piece)
-        self.captured_w.append(piece) if piece.c else self.captured_b.append(piece)
-        whitelist.remove(piece) if piece.c else blacklist.remove(piece)
-        self.whitelist.remove(piece) if piece.c else self.blacklist.remove(piece)
-        self.clear_square(piece.x,piece.y)
-
-    def get_move_count(self):
-        return self.move_count
-    
-    def __str__(self):
-        return(self.b)
-    
-    def add_moves(self,i,c):
-        self.whitemoves.extend(i.moves) if c else self.blackmoves.extend(i.moves)
-        self.whitemoves.sort() if c else self.blackmoves.sort()
-
-    def get_moves(self,c):
-        return self.whitemoves if c else self.blackmoves
-    
-    def is_check(self,piece):
+    def is_check(self,piece): #returns true if check 
         return  (self.wk if piece.c else self.bk) in (self.blackmoves if piece.c else self.whitemoves) 
     
-    def would_be_check(self,piece,x,y):
-        king = self.wk if piece.c else self.bk
+    def is_mate(self): # returns (True,color) if color has been mated
+        if self.is_check(K1):   
+            #print(self.whitemoves)
+            return (not (len(self.whitemoves)), "BLACK WINS")
+        elif self.is_check(K1_):
+            #print(self.blackmoves)
+            return (not (len(self.blackmoves)), "WHITE WINS")
+        else:
+            return (False, "NOT MATE")
+        
+    def move(self,piece,x,y,promote_to=0): # moves the piece to x,y
+
+        self.forced = 0
+
+        if piece.c != (self.move_count-1)%2: # checks which colors turn it is
+            print("Not Your Turn")
+            return
+        
+        if (x,y) not in piece.moves: # checks if the chosen square is in the piece's moves list
+            print("Not in moves list")
+            return 
+        
+        if self.is_piece(x,y): # if there is a piece at x,y then capture it
+            self.capture(self.get_piece(x,y))
+            
+
+        if piece.piece == "P" and x in (0,7): # if the piece is a pawn and has reached to the end of the board, promote it to the chosen piece
+            if not promote_to:
+                piece.promote(input("Enter Piece To Promote To\t"))
+            else:
+                piece.promote(promote_to)
+        
+        if piece.piece =="P" and abs(piece.x-x) == 2: # if en passant has been enabled
+            self.forced = 1
+
+        if (x,y) in self.forced_moves:   #checks if x,y is in the en passant moves list
+            self.capture(self.forced_piece)
+            self.forced_piece=''
+            self.forced_moves=[]
+
+        self.set_piece('.',piece.x,piece.y) 
+        self.set_piece(piece,x,y) 
+
+        if piece.piece == "K": # if piece is a king, update king position variable
+            if piece.c:
+                self.wk = (x,y)
+            else: self.bk = (x,y)
+        
+        self.move_count+=1
+        piece.x = x
+        piece.y = y
+        self.forced_piece = piece
+        
+        update_all(self)
+
+        #if __name__ == '__main__':
+        #self.print()
+    
+    def capture(self,piece):    #adds captured piece to board's list of captured pieces and replaces original 
+        self.captured_w.append(piece) if piece.c else self.captured_b.append(piece)
+        if piece.c:
+            del self.whitelist[piece] 
+        else: 
+            del self.blacklist[piece]
+
+    def total_move_updater(self,piece): # updates the whitemoves and blackmoves list to reflect the current board 
+        if piece.c:
+            self.whitemoves = []
+            for i in self.whitelist.values():
+                for j in i: self.whitemoves.append(j)
+        else:
+            self.blackmoves = []
+            for i in self.blacklist.values():
+                for j in i: self.blackmoves.append(j)
+
+    def would_be_check(self,piece,x,y,not_ = 1): # returns True if the move would cause a check, False if not. 
+        king = self.wk if piece.c else self.bk #If not_1 = False, then the function changes to a would_block_check function, returning True if the move would stop check
             
         if (x,y) not in piece.moves:
             return 
@@ -115,52 +166,16 @@ class bored:
                 blacker.append(j)
         if piece.piece == "K":
             king = (x,y)
-        return (king in (blacker if piece.c else whiter))
-
-    def move(self,piece,x,y):
-
-        self.forced = 0
-
-        if piece.c != (self.move_count-1)%2:
-            print("Not Your Turn")
-            return
-        
-        if (x,y) not in piece.moves:
-            print("Not in moves list")
-            return 
-        
-        if self.is_piece(x,y):
-            self.capture(self.get_piece(x,y))
-            
-
-        if piece.piece == "P" and x in (0,7):
-            piece.promote(input("Enter Piece To Promote To\t"))
-        
-        if piece.piece =="P" and abs(piece.x-x) == 2:
-            self.forced = 1
-
-        if (x,y) in self.forced_moves:
-            self.capture(self.forced_piece)
-            self.forced_piece=''
-            self.forced_moves=[]
-
-        self.clear_square(piece.x,piece.y)
-        self.set_piece(piece,x,y)
-
-        if piece.piece == "K":
-            if piece.c:
-                self.wk = (x,y)
-            else: self.bk = (x,y)
-        
-        self.move_count+=1
-        piece.x = x
-        piece.y = y
-        self.forced_piece = piece
-        
-        update_all(self)
-
-        if __name__ == '__main__':
-            self.print()
+        return  (king in (blacker if piece.c else whiter)) if not_ else not (king in (blacker if piece.c else whiter))
+    
+    def is_stalemate(self): #returns (True,Color) if stalemate
+        if not self.is_check(K1) and not len(self.whitemoves):
+            return (True,"STALEMATE, GAME DRAWN (WHITE STALEMATE)")
+        elif not self.is_check(K1_) and not len(self.blackmoves):
+            return(True,"STALEMATE, GAME DRAWN (BLACK STALEMATE)")
+        else:
+            return (False,"NOT STALEMATE")
+#----------------------------------------------------------------------------------------------------------------------------------
 
 class piece:
     
@@ -174,10 +189,13 @@ class piece:
         self.put_moves_2(board)
         #self.k = (7,4) if self.c else (0,4)
 
-    def promote(self,a):
+    """ DO NOT TOUCH ZONE"""
+#----------------------------------------------------------------------------------------------------------------------------------
+
+    def promote(self,a): 
         self.piece = a
 
-    def put_moves(self,board):
+    def put_moves(self,board): #adds moves, without checking for legality
         self.moves = []
 
         def rook(): #fixed
@@ -270,47 +288,28 @@ class piece:
             if self.c:board.wk = self.get_loc() 
             else: board.bk = self.get_loc()
             for i in [1,-1]:
-                self.moves.append((self.x,self.y+i)) if valid(self.x,self.y+i) and not board.is_piece(self.x,self.y+i) else None #right and left
-                self.moves.append((self.x+i,self.y)) if valid(self.x+i,self.y) and not board.is_piece(self.x+i,self.y) else None #top and bottom
-                self.moves.append((self.x+i,self.y+i)) if valid(self.x+i,self.y+i) and not board.is_piece(self.x+i,self.y+i) else None # top-right and bottom left
-                self.moves.append((self.x+i,self.y-i)) if valid(self.x+i,self.y-i) and not board.is_piece(self.x+i,self.y-i) else None # top-left and bottom right
+                x = self.x
+                y = self.y
+
+                def chong(x,y):
+                    if valid(x,y): 
+                        if board.is_piece(x,y):
+                            if board.get_piece(x,y).c != self.c:
+                                self.moves.append((x,y))
+                        else:
+                            self.moves.append((x,y))
+
+                chong(x,y+i)
+                chong(x+i,y)
+                chong(x+i,y+i)
+                chong(x+i,y-i)
 
         self.moves.sort()
-        
-    def put_moves_2(self,board):
-        self.put_moves(board)
-        f = self.moves.copy()
-
-        for i in f:
-            if board.would_be_check(self,i[0],i[1]):
-                self.moves.remove(i)
-
-        if board.is_check(self) and self.piece != "K":
-            #print("Check",self.c)
-            self.moves=[]
-            #print(self.moves)
-
-        if self.piece == "P" and board.forced:
-            x = board.forced_piece.copy()[0]
-            y = board.forced_piece.copy()[1]
-            
-            if self.c != board.forced_piece.copy()[2] and abs(self.y-y) ==1 and self.x == x:
-                k = self.y - y
-
-                if (valid(self.x-1,self.y-k) if self.c else valid(self.x+1,self.y-k)):
-                    self.moves.append((self.x-1,self.y-k)) if self.c else self.moves.append((self.x+1,self.y-k))
-                    board.forced_moves.append((self.x-1,self.y-k)) if self.c else board.forced_moves.append((self.x+1,self.y-k)) 
-        
-        if self.piece == "K":
-            if self.c:
-                board.matew = self.moves
-            else:
-                board.mateb = self.moves
 
     def get_moves(self,board):
         self.put_moves_2(board)
         return self.moves
-
+    
     def get_color(self):
         return self.c
     
@@ -324,14 +323,53 @@ class piece:
         return [self.x,self.y,self.c,self.piece]
 
     def get_image(self):
-        return self.piece if self.c else self.piece.lower()+'_'
+        return self.piece if self.c else self.piece+'_'
+    
+#----------------------------------------------------------------------------------------------------------------------------------
+
+    def put_moves_2(self,board):
+        self.put_moves(board) #all moves possible have been put, even illegal moves
+
+        for i in self.moves.copy(): #removes all moves which would cause a check to occur
+            if board.would_be_check(self,i[0],i[1]):
+                self.moves.remove(i)
+
+        if self.piece == "P" and board.forced: # adds en passant to pawn moves
+            x = board.forced_piece.copy()[0]
+            y = board.forced_piece.copy()[1]
+            if self.c != board.forced_piece.copy()[2] and abs(self.y-y) ==1 and self.x == x:
+                k = self.y - y
+                if (valid(self.x-1,self.y-k) if self.c else valid(self.x+1,self.y-k)):
+                    self.moves.append((self.x-1,self.y-k)) if self.c else self.moves.append((self.x+1,self.y-k))
+                    board.forced_moves.append((self.x-1,self.y-k)) if self.c else board.forced_moves.append((self.x+1,self.y-k)) 
         
+        if board.is_check(self): # removes all moves which dont block check if there is a check
+            for i in self.moves.copy():
+                if not board.would_be_check(self,i[0],i[1],0): # if not would block check
+                    self.moves.remove(i)
+  
+        if self.piece == "K": #updates the list of king moves possible
+            if self.c:
+                board.matew = self.moves
+            else:
+                board.mateb = self.moves
+
+        self.moves.sort() # final list of moves after everything needed has been adjusted
+
+        if self.c: # adds or updates the list of white and black pieces in the board class and correctly sets their moves
+            board.whitelist[self] = self.moves
+        else:
+            board.blacklist[self] = self.moves
+        
+        board.total_move_updater(self) #updates all possible moves for white and black after the piece's moves have been set
+
+
 def create_pieces():# this function is obsolete
     global B, B_, EMPTY,K, K_, N, N_, P, P_, Q, Q_, R, R_,KNOOK
     cwd = os.getcwd()
     EMPTY = PhotoImage(file=rf"{cwd}\sprites\empty.png")
     B = PhotoImage(file=rf"{cwd}\sprites\B.png")
-    B_ = PhotoImage(file=rf"{cwd}\sprites\b_.png")
+    B_ = PhotoImage(file=rf"{cwd}\sprites\b_.png") 
     K = PhotoImage(file=rf"{cwd}\sprites\K.png")
     K_ = PhotoImage(file=rf"{cwd}\sprites\k_.png")
     N = PhotoImage(file=rf"{cwd}\sprites\N.png")
@@ -346,6 +384,7 @@ def create_pieces():# this function is obsolete
 
 def choose_piece(p):
     create_pieces()
+    #exec(f'return({p.upper()})')
     if p == "B": return B
     elif p == "b_": return B_
     elif p == "K": return K
@@ -363,8 +402,8 @@ def choose_piece(p):
 
 b = bored()
 
-K = piece("K",7,4,1,b)
-K_ = piece("K",0,4,0,b)
+K1 = piece("K",7,4,1,b)
+K1_ = piece("K",0,4,0,b)
 
 R1 = piece("R",7,0,1,b)
 R2 = piece("R",7,7,1,b)
@@ -382,8 +421,8 @@ B2 = piece("B",7,5,1,b)
 B1_ = piece("B",0,2,0,b)
 B2_ = piece("B",0,5,0,b)
 
-Q = piece("Q",7,3,1,b)
-Q_ = piece("Q",0,3,0,b)
+Q1 = piece("Q",7,3,1,b)
+Q1_ = piece("Q",0,3,0,b)
 
 P1 = piece("P",6,0,1,b)
 P2 = piece("P",6,1,1,b)
@@ -403,18 +442,14 @@ P6_ = piece("P",1,5,0,b)
 P7_ = piece("P",1,6,0,b)
 P8_ = piece("P",1,7,0,b)
 
-whitelist = [R1,R2,B1,B2,Q,K,N1,N2,K,P1,P2,P3,P4,P5,P6,P7,P8]
-blacklist = [R1_,R2_,B1_,B2_,N1_,N2_,Q_,K_,P1_,P2_,P3_,P4_,P5_,P6_,P7_,P8_]
-b.wlbl(whitelist,1)
-b.wlbl(blacklist,0)
+
 update_all(b)
 
 if __name__ =='__main__':
     b.print()
-    while True:
-        if b.is_mate() and b.move_count>2:
-            print("CHECKMATE")
-            break
-        else:
-            exec(input("Enter Command\t").strip())
+    while not game_over(b):
+            with fr:
+                exec(input("Enter Command\t"))
             #print(K.moves)
+    else:
+        print(game_over(b))
