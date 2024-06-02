@@ -1,6 +1,7 @@
 import os,fuckit as fr
 from tkinter import *
 import temp
+# add castling
 def valid(x,y):
     return (0<=x and x<=7 and y<=7 and y>=0) 
 
@@ -29,8 +30,10 @@ class bored:
         self.forced_piece = '' #piece which is going to be en passanted
         self.forced_moves=[] # moves which the en passanter can make?
         self.matew,self.mateb=[],[]#list of king moves
+        self.ccb,self.ccw = False, False
 
-
+    """DO NOT TOUCH ZONE"""
+#----------------------------------------------------------------------------------------------------------------------------------
     
     def print(self): #prints the board in a readable format
         print()
@@ -57,6 +60,34 @@ class bored:
     def is_check(self,piece): #returns true if check 
         return  (self.wk if piece.c else self.bk) in (self.blackmoves if piece.c else self.whitemoves) 
     
+    def can_castle(self,piece):
+
+        lcp,scp = True,True
+        k,r1,r2 = ((7,4),(7,0),(7,7)) if piece.c else ((0,4),(0,0),(0,7))  
+
+
+        if self.wk != (7,4) if piece.c else self.bk != (0,4): #king hasnt moved
+            return False
+        
+        
+        row = [(7,i) for i in range(8) if i not in (0,4,7)] if piece.c else [(0,i) for i in range(8) if i not in (0,4,7)] 
+
+        for i,j in row: 
+            if self.is_piece(i,j):# both pieces see eachother 
+                if row.index((i,j))>2: scp = False
+                else: lcp = False
+            if i in (self.blacklist if piece.c else self.whitelist): #no black piece stops castling
+                if row.index((i,j))>2: scp = False
+                else: lcp = False
+
+        if self.is_piece(r2[0],r2[1]):
+            scp = False if self.get_piece(r2[0],r2[1]).copy()[-1] not in ("R") else scp #rooks havent moved
+        if self.is_piece(r1[0],r1[1]):
+            lcp = False if self.get_piece(r1[0],r1[1]).copy()[-1] not in ("R") else lcp
+
+        return [scp,lcp]
+
+    
     def is_mate(self): # returns (True,color) if color has been mated
         if self.is_check(K1):   
             #print(self.whitemoves)
@@ -66,6 +97,27 @@ class bored:
             return (not (len(self.blackmoves)), "WHITE WINS")
         else:
             return (False, "NOT MATE")
+    
+    def castle(self,piece,x,y):
+        self.b[x][y] = piece # moves the king
+        self.b[piece.x][piece.y] = "."
+        if y == 6: #moves the rook
+            self.b[x][y-1] = self.b[x][7]
+            self.b[x][7] = '.'
+        else:
+            self.b[x][y+1] = self.b[x][0]
+            self.b[x][0] = '.'
+        
+        if piece.c:
+            self.wk = (x,y)
+        else: self.bk = (x,y)
+
+        self.move_count+=1
+        piece.x = x
+        piece.y = y
+        self.forced_piece = piece
+        
+        update_all(self)
         
     def move(self,piece,x,y,promote_to=0): # moves the piece to x,y
 
@@ -78,6 +130,10 @@ class bored:
         if (x,y) not in piece.moves: # checks if the chosen square is in the piece's moves list
             print("Not in moves list")
             return 
+        
+        if piece.piece == "K" and abs(piece.y - y) == 2:
+                self.castle(piece,x,y)
+                return
         
         if self.is_piece(x,y): # if there is a piece at x,y then capture it
             self.capture(self.get_piece(x,y))
@@ -173,7 +229,7 @@ class bored:
             return(True,"STALEMATE, GAME DRAWN (BLACK STALEMATE)")
         else:
             return (False,"NOT STALEMATE")
-
+#----------------------------------------------------------------------------------------------------------------------------------
 
 class piece:
     
@@ -185,8 +241,10 @@ class piece:
         self.moves = []
         self.c = color
         self.put_moves_2(board)
-        self.k = (7,4) if self.c else (0,4)
+        #self.k = (7,4) if self.c else (0,4)
 
+    """ DO NOT TOUCH ZONE"""
+#----------------------------------------------------------------------------------------------------------------------------------
 
     def promote(self,a): 
         self.piece = a
@@ -320,6 +378,8 @@ class piece:
 
     def get_image(self):
         return self.piece if self.c else self.piece+'_'
+    
+#----------------------------------------------------------------------------------------------------------------------------------
 
     def put_moves_2(self,board):
         self.put_moves(board) #all moves possible have been put, even illegal moves
@@ -341,12 +401,23 @@ class piece:
             for i in self.moves.copy():
                 if not board.would_be_check(self,i[0],i[1],0): # if not would block check
                     self.moves.remove(i)
-  
-        if self.piece == "K": #updates the list of king moves possible
+
+        if self.piece == "K": #updates the list of king moves possible and castling rights
             if self.c:
                 board.matew = self.moves
             else:
                 board.mateb = self.moves
+
+            a = board.can_castle(self)
+            sc = a[0] if a else False
+            lc = a[1] if a else False
+
+            if self.c:
+                if sc: self.moves.append((7,6))
+                if lc: self.moves.append((7,2))
+            else:
+                if sc: self.moves.append((0,6))
+                if lc: self.moves.append((0,2))
 
         self.moves.sort() # final list of moves after everything needed has been adjusted
 
