@@ -1,11 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
 from pieces import bored,piece,update_all,choose_piece
+#fix king's move functions and castling
 import os
 cwd = os.getcwd()
 window = Tk()
 window.configure(bg='black')
-window.wm_attributes('-transparentcolor', 'forest green')
 
 o = lambda a:a/1536
 p = lambda a:a/888
@@ -48,7 +48,7 @@ def reset_color():
 
 def move_piece(x,y):
     global clicknum,chosen_piece
-    if not clicknum:
+    if not clicknum: #1st click, highlights the squares
         if b.is_piece(x,y):
             clicknum=1
             chosen_piece = b.get_piece(x,y)
@@ -60,11 +60,15 @@ def move_piece(x,y):
             clicknum = 0
             return
     else:
-        if (x,y) in chosen_piece.get_moves(b):
+        if (x,y) in chosen_piece.get_moves(b): #2nd click, moves the piece
             b.move(chosen_piece,x,y)
             construct()
             if b.is_mate()[0] and b.move_count>2:
-                messagebox.showinfo("CHECKMATE", f"CHECKMATE. {b.is_mate()[1]} WINS")
+                messagebox.showinfo("CHECKMATE", f"CHECKMATE. {b.is_mate()[1]}")
+                window.destroy()
+                return
+            elif b.is_stalemate()[0]:
+                messagebox.showinfo("STALEMATE", "STALEMATE. GAME DRAWN")
                 window.destroy()
                 return
             clicknum=0
@@ -81,8 +85,8 @@ def move_piece(x,y):
 
 b = bored()
 
-K = piece("K",7,4,1,b)
-K_ = piece("K",0,4,0,b)
+K1 = piece("K",7,4,1,b)
+K1_ = piece("K",0,4,0,b)
 
 R1 = piece("R",7,0,1,b)
 R2 = piece("R",7,7,1,b)
@@ -100,8 +104,8 @@ B2 = piece("B",7,5,1,b)
 B1_ = piece("B",0,2,0,b)
 B2_ = piece("B",0,5,0,b)
 
-Q = piece("Q",7,3,1,b)
-Q_ = piece("Q",0,3,0,b)
+Q1 = piece("Q",7,3,1,b)
+Q1_ = piece("Q",0,3,0,b)
 
 P1 = piece("P",6,0,1,b)
 P2 = piece("P",6,1,1,b)
@@ -121,11 +125,7 @@ P6_ = piece("P",1,5,0,b)
 P7_ = piece("P",1,6,0,b)
 P8_ = piece("P",1,7,0,b)
 
-whitelist = [R1,R2,B1,B2,Q,K,N1,N2,K,P1,P2,P3,P4,P5,P6,P7,P8]
-blacklist = [R1_,R2_,B1_,B2_,N1_,N2_,Q_,K_,P1_,P2_,P3_,P4_,P5_,P6_,P7_,P8_]
 
-b.wlbl(whitelist,1)
-b.wlbl(blacklist,0)
 update_all(b)
 
 grid =[list('.')*8 for i in range(8)]
@@ -136,7 +136,18 @@ for i in range(8):
     Label(window,text=chr(i+65),font = fonts(18),bg = 'black',fg = 'white').place(relx = o(i*107+400),rely = p(865))
     Label(window,text = f'{8-i}',font = fonts(18),bg= 'black',fg = 'white').place(rely = o(i*196+30),relx = p(710))
 Label(window,text = 'CLOSE',font = fonts(18),bg= 'black',fg = 'white').place(rely = o(120),relx = p(850))
+
+def terminal():
+    def submit():
+        f = t.get(1.0,"end-1c")
+        exec(f)
+        t.delete('1.0', END)
+    t = Text(window,width=25,height = 10)
+    t.pack(side = LEFT)
+    t.bind('<Return>',lambda a: submit())
+    Button(window,command=submit).pack(side = LEFT)
 print()
 window.attributes('-fullscreen',True)
 window.bind('<Escape>',lambda a: window.destroy())
+window.bind('<F1>',lambda a: terminal())
 window.mainloop()
