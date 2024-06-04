@@ -250,33 +250,25 @@ class piece:
             tx = self.x
             ty = self.y
             
+            def func(a,b,tx,ty):
+                while (valid(tx,ty)): 
+
+                    if not board.is_piece(tx,ty): 
+                        self.moves.append((tx,ty))
+                    else:
+                        if board.get_piece(tx,ty) != self:                            
+                            if board.get_piece(tx,ty).c == self.c:
+                                break
+                            else:
+                                self.moves.append((tx,ty))
+                                break
+                    tx+=a
+                    ty+=b 
+
             for z in [1,-1]:
-                while (valid(tx,ty)): # downwards then upwards
+                func(z,0,tx,ty) #down and up 
+                func(0,z,tx,ty) #right and left
 
-                    if not board.is_piece(tx,ty): 
-                        self.moves.append((tx,ty))
-                    else:
-                        if board.get_piece(tx,ty) != self:                            
-                            if board.get_piece(tx,ty).c == self.c:
-                                break
-                            else:
-                                self.moves.append((tx,ty))
-                                break
-                    tx+=z
-                tx = self.x
-
-                while (valid(tx,ty)): # left then right
-                    if not board.is_piece(tx,ty): 
-                        self.moves.append((tx,ty))
-                    else:
-                        if board.get_piece(tx,ty) != self:                            
-                            if board.get_piece(tx,ty).c == self.c:
-                                break
-                            else:
-                                self.moves.append((tx,ty))
-                                break
-                    ty+=z
-                ty = self.y
                 
         def bishop(): #fixed
             tx = self.x
