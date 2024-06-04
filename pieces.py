@@ -1,6 +1,7 @@
 import os,fuckit as fr
 from tkinter import *
 import temp
+# improve UI (red checks and not your move[if possible])
 def valid(x,y):
     return (0<=x and x<=7 and y<=7 and y>=0) 
 
@@ -30,6 +31,9 @@ class bored:
         self.forced_moves=[] # moves which the en passanter can make?
         self.matew,self.mateb=[],[]#list of king moves
         self.ccb,self.ccw = False, False
+
+    """DO NOT TOUCH ZONE"""
+#----------------------------------------------------------------------------------------------------------------------------------
     
     def print(self): #prints the board in a readable format
         print()
@@ -120,12 +124,10 @@ class bored:
         self.forced = 0
 
         if piece.c != (self.move_count-1)%2: # checks which colors turn it is
-            print("Not Your Turn")
-            return
+            return ("Not Your Turn")
         
         if (x,y) not in piece.moves: # checks if the chosen square is in the piece's moves list
-            print("Not in moves list")
-            return 
+            return ("Not in moves list")
         
         if piece.piece == "K" and abs(piece.y - y) == 2:
                 self.castle(piece,x,y)
@@ -225,7 +227,7 @@ class bored:
             return(True,"STALEMATE, GAME DRAWN (BLACK STALEMATE)")
         else:
             return (False,"NOT STALEMATE")
-
+#----------------------------------------------------------------------------------------------------------------------------------
 
 class piece:
     
@@ -239,6 +241,8 @@ class piece:
         self.put_moves_2(board)
         #self.k = (7,4) if self.c else (0,4)
 
+    """ DO NOT TOUCH ZONE"""
+#----------------------------------------------------------------------------------------------------------------------------------
 
     def promote(self,a): 
         self.piece = a
@@ -365,6 +369,7 @@ class piece:
     def get_image(self):
         return self.piece if self.c else self.piece+'_'
     
+#----------------------------------------------------------------------------------------------------------------------------------
 
     def put_moves_2(self,board):
         self.put_moves(board) #all moves possible have been put, even illegal moves
