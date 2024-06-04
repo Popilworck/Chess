@@ -1,10 +1,15 @@
 from tkinter import *
 from tkinter import messagebox
-from pieces import bored,piece,update_all,choose_piece
+from pieces import bored,piece,update_all
 import os
+from zipfile import ZipFile
+
 cwd = os.getcwd()
 window = Tk()
 window.configure(bg='black')
+if 'sprites' not in os.listdir():
+    with ZipFile(cwd+'\sprites.zip','r') as f:
+        f.extractall(cwd+'\sprites')
 
 o = lambda a:a/1536
 p = lambda a:a/888
@@ -27,6 +32,7 @@ images = {"B": PhotoImage(file=rf"{cwd}\sprites\B.png"),
 'R' : PhotoImage(file=rf"{cwd}\sprites\R.png"),
 'R_': PhotoImage(file=rf"{cwd}\sprites\r_.png"),
 'KNOOK':PhotoImage(file=rf"{cwd}\sprites\knook.png")}
+
 def construct():
     for i in range(8):
         for j in range(8):
@@ -38,7 +44,7 @@ def construct():
                 btn.image = knook
             btn.place(relx=o(j*107+350),rely=p(i*107),width=110,height=110)
             grid[i][j] = btn
-    Button(window,image=choose_piece("KNOOK"),command= lambda: window.destroy()).place(relx=o(1470),rely=p(0))
+    Button(window,image=images["KNOOK"],command= lambda: window.destroy()).place(relx=o(1470),rely=p(0))
 
 def reset_color():
     for i in range(8):
@@ -60,19 +66,30 @@ def move_piece(x,y):
             return
     else:
         if (x,y) in chosen_piece.get_moves(b): #2nd click, moves the piece
-            b.move(chosen_piece,x,y)
-            construct()
-            if b.is_mate()[0] and b.move_count>2:
-                messagebox.showinfo("CHECKMATE", f"CHECKMATE. {b.is_mate()[1]}")
-                window.destroy()
+            ahens = b.move(chosen_piece,x,y)
+            if ahens == None:
+                construct()
+                if b.is_check(K1):
+                    grid[b.wk[0]][b.wk[1]].configure(bg = "red3")
+                if b.is_check(K1_):
+                    grid[b.bk[0]][b.bk[1]].configure(bg = "red3")
+                if b.is_mate()[0] and b.move_count>2:
+                    messagebox.showinfo("CHECKMATE", f"CHECKMATE. {b.is_mate()[1]}")
+                    window.destroy()
+                    return
+                elif b.is_stalemate()[0]:
+                    messagebox.showinfo("STALEMATE", "STALEMATE. GAME DRAWN")
+                    window.destroy()
+                    return
+                clicknum=0
+                chosen_piece=''
                 return
-            elif b.is_stalemate()[0]:
-                messagebox.showinfo("STALEMATE", "STALEMATE. GAME DRAWN")
-                window.destroy()
+            else: 
+                messagebox.showerror(ahens, ahens)
+                reset_color()
+                clicknum = 0
+                chosen_piece = ''
                 return
-            clicknum=0
-            chosen_piece=''
-            return
         else:
             messagebox.showerror("ERROR", "NOT IN MOVES LIST") 
             reset_color()
