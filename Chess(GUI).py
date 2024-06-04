@@ -91,7 +91,6 @@ def move_piece(x,y):
                 chosen_piece = ''
                 return
         else:
-            messagebox.showerror("ERROR", "NOT IN MOVES LIST") 
             reset_color()
             clicknum = 0
             chosen_piece = ''
