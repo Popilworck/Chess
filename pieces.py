@@ -1,7 +1,7 @@
 import os,fuckit as fr
 from tkinter import *
-import temp
-# improve UI (red checks and not your move[if possible])
+import copy
+
 def valid(x,y):
     return (0<=x and x<=7 and y<=7 and y>=0) 
 
@@ -17,24 +17,44 @@ def game_over(board ):
     else:
         return False
 
+def new_start(board,piece,x,y):
+    if piece.piece == "K":
+        king = (x,y)
+    else:
+        king  = board.wk if piece.c else board.bk
+    ox,oy = piece.x,piece.y
+    board.b[ox][oy] = '.'
+    board.b[x][y] = piece
+    c = piece.c
+    piecelist =[]
+    for i in board.b:
+        for j in i:
+            if j!='.':
+                if j.c!= c: piecelist.append(j)
+    movelist = []
+    for i in piecelist:
+        for j in i.put_moves(board):
+            movelist.append(j)
+    return king in movelist
+
 class bored:
 
-    def __init__(self) -> None:
-        self.b = [['.' for i in range(8)] for k in range(8)]
-        self.move_count = 0
-        self.whitelist,self.blacklist = {},{}#dict of pieces:piece.moves for white and black
-        self.whitemoves, self.blackmoves = [],[] # list of all possible moves for white and black
-        self.captured_w, self.captured_b = [],[]# list of captured white and black pieces
-        self.wk,self.bk = (7,4),(0,4) #locations of white and black kings
-        self.forced = 0 #en passant check
-        self.forced_piece = '' #piece which is going to be en passanted
-        self.forced_moves=[] # moves which the en passanter can make?
-        self.matew,self.mateb=[],[]#list of king moves
-        self.ccb,self.ccw = False, False
-
-    """DO NOT TOUCH ZONE"""
-#----------------------------------------------------------------------------------------------------------------------------------
+    def __init__(self,b = [['.' for i in range(8)] for k in range(8)] ,move_count = 0,whitelist = {},blacklist = {},whitemoves = [],blackmoves = [],captured_w = [],captured_b = [],wk = (7,4),bk=(0,4),forced = 0,forced_piece = 0,forced_moves = [],matew = [],mateb = [],ccb =False,ccw= False):
+        self.b = b
+        self.move_count = move_count
+        self.whitelist,self.blacklist = whitelist,blacklist#dict of pieces:piece.moves for white and black
+        self.whitemoves, self.blackmoves = whitemoves,blackmoves # list of all possible moves for white and black
+        self.captured_w, self.captured_b = captured_w,captured_b # list of captured white and black pieces
+        self.wk,self.bk = wk,bk #locations of white and black kings
+        self.forced = forced #en passant check
+        self.forced_piece = forced_piece #piece which is going to be en passanted
+        self.forced_moves= forced_moves# moves which the en passanter can make?
+        self.matew,self.mateb=matew,mateb #list of king moves
+        self.ccb,self.ccw = ccb,ccw
     
+    def copy(self): #returns a deepcopy of itself
+        return copy.deepcopy(self)
+
     def print(self): #prints the board in a readable format
         print()
         for i in self.b:
@@ -86,7 +106,6 @@ class bored:
             lcp = False if self.get_piece(r1[0],r1[1]).copy()[-1] not in ("R") else lcp
 
         return [scp,lcp]
-
     
     def is_mate(self): # returns (True,color) if color has been mated
         if self.is_check(K1):   
@@ -186,39 +205,8 @@ class bored:
             for i in self.blacklist.values():
                 for j in i: self.blackmoves.append(j)
 
-    def would_be_check(self,piece,x,y,not_ = 1): # returns True if the move would cause a check, False if not. 
-        king = self.wk if piece.c else self.bk #If not_1 = False, then the function changes to a would_block_check function, returning True if the move would stop check
-            
-        if (x,y) not in piece.moves:
-            return 
-        
-        whit,blac = [],[]
-        tb = [['.' for i in range(8)] for k in range(8)]
-        
-        for i in range(8):
-            for j in range(8):
-                tb[i][j] = (self.get_piece(i,j)).copy() if self.is_piece(i,j) else '.'
-                tb[i][j] = (self.get_piece(i,j)).copy() if self.is_piece(i,j) else '.'
-        tb[piece.x][piece.y] = '.'
-        tb[x][y] = piece.copy()
-        tb[x][y][0] =x
-        tb[x][y][1] = y
-
-        for i in tb:
-            for j in i:
-                if j!='.':
-                    whit.append(temp.classify(j,tb)) if j[2] else None
-                    blac.append(temp.classify(j,tb)) if not j[2] else None
-        whiter,blacker = [],[] #list of squares in sight of white, list of squares in sight of black
-        for i in whit:
-            for j in i:
-                whiter.append(j)
-        for i in blac:
-            for j in i:
-                blacker.append(j)
-        if piece.piece == "K":
-            king = (x,y)
-        return  (king in (blacker if piece.c else whiter)) if not_ else not (king in (blacker if piece.c else whiter))
+    def would_be_check(self,piece,x,y): # returns True if the move would cause a check, False if not. 
+        return new_start(self.copy(),piece,x,y)
     
     def is_stalemate(self): #returns (True,Color) if stalemate
         if not self.is_check(K1) and not len(self.whitemoves):
@@ -227,7 +215,6 @@ class bored:
             return(True,"STALEMATE, GAME DRAWN (BLACK STALEMATE)")
         else:
             return (False,"NOT STALEMATE")
-#----------------------------------------------------------------------------------------------------------------------------------
 
 class piece:
     
@@ -240,9 +227,6 @@ class piece:
         self.c = color
         self.put_moves_2(board)
         #self.k = (7,4) if self.c else (0,4)
-
-    """ DO NOT TOUCH ZONE"""
-#----------------------------------------------------------------------------------------------------------------------------------
 
     def promote(self,a): 
         self.piece = a
@@ -350,6 +334,8 @@ class piece:
 
         self.moves.sort()
 
+        return self.moves
+
     def get_moves(self,board):
         self.put_moves_2(board)
         return self.moves
@@ -369,8 +355,6 @@ class piece:
     def get_image(self):
         return self.piece if self.c else self.piece+'_'
     
-#----------------------------------------------------------------------------------------------------------------------------------
-
     def put_moves_2(self,board):
         self.put_moves(board) #all moves possible have been put, even illegal moves
 
@@ -387,10 +371,6 @@ class piece:
                     self.moves.append((self.x-1,self.y-k)) if self.c else self.moves.append((self.x+1,self.y-k))
                     board.forced_moves.append((self.x-1,self.y-k)) if self.c else board.forced_moves.append((self.x+1,self.y-k)) 
         
-        if board.is_check(self): # removes all moves which dont block check if there is a check
-            for i in self.moves.copy():
-                if not board.would_be_check(self,i[0],i[1],0): # if not would block check
-                    self.moves.remove(i)
 
         if self.piece == "K": #updates the list of king moves possible and castling rights
             if self.c:
@@ -417,42 +397,6 @@ class piece:
             board.blacklist[self] = self.moves
         
         board.total_move_updater(self) #updates all possible moves for white and black after the piece's moves have been set
-
-
-def create_pieces():# this function is obsolete
-    global B, B_, EMPTY,K, K_, N, N_, P, P_, Q, Q_, R, R_,KNOOK
-    cwd = os.getcwd()
-    EMPTY = PhotoImage(file=rf"{cwd}\sprites\empty.png")
-    B = PhotoImage(file=rf"{cwd}\sprites\B.png")
-    B_ = PhotoImage(file=rf"{cwd}\sprites\b_.png") 
-    K = PhotoImage(file=rf"{cwd}\sprites\K.png")
-    K_ = PhotoImage(file=rf"{cwd}\sprites\k_.png")
-    N = PhotoImage(file=rf"{cwd}\sprites\N.png")
-    N_ = PhotoImage(file=rf"{cwd}\sprites\N_.png")
-    P = PhotoImage(file=rf"{cwd}\sprites\P.png")
-    P_ = PhotoImage(file=rf"{cwd}\sprites\p_.png")
-    Q = PhotoImage(file=rf"{cwd}\sprites\Q.png")
-    Q_ = PhotoImage(file=rf"{cwd}\sprites\q_.png")
-    R = PhotoImage(file=rf"{cwd}\sprites\R.png")
-    R_ = PhotoImage(file=rf"{cwd}\sprites\r_.png")
-    KNOOK = PhotoImage(file=rf"{cwd}\sprites\knook.png")
-
-def choose_piece(p):
-    create_pieces()
-    match p:
-        case "B": return B
-        case "b_": return B_
-        case "K": return K
-        case "k_" : return K_
-        case "N": return N
-        case "n_": return N_
-        case "P": return P
-        case "p_": return P_
-        case "Q": return Q
-        case "q_": return Q_
-        case "R": return R
-        case "r_": return R_
-        case _: return EMPTY
 
 
 b = bored()
