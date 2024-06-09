@@ -117,14 +117,22 @@ class bored:
     
     def castle(self,piece,x,y):
         self.b[x][y] = piece # moves the king
-        self.b[piece.x][piece.y] = "."
+        
         if y == 6: #moves the rook
+            roook = self.get_piece(x,7)
+            roook.x = x
+            roook.y = y-1
+            print(roook.copy())
             self.b[x][y-1] = self.b[x][7]
             self.b[x][7] = '.'
         else:
+            roook = self.get_piece(x,0)
+            roook.x = x
+            roook.y = y+1
             self.b[x][y+1] = self.b[x][0]
             self.b[x][0] = '.'
-        
+
+        self.b[piece.x][piece.y] = "."
         if piece.c:
             self.wk = (x,y)
         else: self.bk = (x,y)
