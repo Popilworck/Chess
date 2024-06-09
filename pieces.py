@@ -39,22 +39,22 @@ def new_start(board,piece,x,y):
 
 class bored:
 
-    def __init__(self,b = [['.' for i in range(8)] for k in range(8)] ,move_count = 0,whitelist = {},blacklist = {},whitemoves = [],blackmoves = [],captured_w = [],captured_b = [],wk = (7,4),bk=(0,4),forced = 0,forced_piece = 0,forced_moves = [],matew = [],mateb = [],ccb =False,ccw= False):
-        self.b = b
-        self.move_count = move_count
-        self.whitelist,self.blacklist = whitelist,blacklist#dict of pieces:piece.moves for white and black
-        self.whitemoves, self.blackmoves = whitemoves,blackmoves # list of all possible moves for white and black
-        self.captured_w, self.captured_b = captured_w,captured_b # list of captured white and black pieces
+    def __init__(self, ini = [['.' for i in range(8)] for k in range(8)], mc =0,wm=[],bm=[],cw=[],cb=[],wk=(7,4),bk=(0,4),f=0,fp='',fm=[],mb=[],mw=[],ccb=False,ccw=False) -> None:
+        self.b = ini
+        self.move_count = mc
+        self.whitelist,self.blacklist = {},{}#dict of pieces:piece.moves for white and black
+        self.whitemoves, self.blackmoves = wm,bm # list of all possible moves for white and black
+        self.captured_w, self.captured_b = cw,cb# list of captured white and black pieces
         self.wk,self.bk = wk,bk #locations of white and black kings
-        self.forced = forced #en passant check
-        self.forced_piece = forced_piece #piece which is going to be en passanted
-        self.forced_moves= forced_moves# moves which the en passanter can make?
-        self.matew,self.mateb=matew,mateb #list of king moves
+        self.forced = f #en passant check
+        self.forced_piece = fp #piece which is going to be en passanted
+        self.forced_moves= fm # moves which the en passanter can make?
+        self.matew,self.mateb= mw,mb#list of king moves
         self.ccb,self.ccw = ccb,ccw
-    
+
     def copy(self): #returns a deepcopy of itself
         return copy.deepcopy(self)
-
+    
     def print(self): #prints the board in a readable format
         print()
         for i in self.b:
@@ -83,12 +83,10 @@ class bored:
     def can_castle(self,piece):
 
         lcp,scp = True,True
-        k,r1,r2 = ((7,4),(7,0),(7,7)) if piece.c else ((0,4),(0,0),(0,7))  
-
+        k,r1,r2 = ((7,4),(7,0),(7,7)) if piece.c else ((0,4),(0,0),(0,7))
 
         if self.wk != (7,4) if piece.c else self.bk != (0,4): #king hasnt moved
             return False
-        
         
         row = [(7,i) for i in range(8) if i not in (0,4,7)] if piece.c else [(0,i) for i in range(8) if i not in (0,4,7)] 
 
@@ -257,7 +255,6 @@ class piece:
                 func(z,0,tx,ty) #down and up 
                 func(0,z,tx,ty) #right and left
 
-                
         def bishop(): #fixed
             tx = self.x
             ty = self.y
@@ -371,7 +368,6 @@ class piece:
                     self.moves.append((self.x-1,self.y-k)) if self.c else self.moves.append((self.x+1,self.y-k))
                     board.forced_moves.append((self.x-1,self.y-k)) if self.c else board.forced_moves.append((self.x+1,self.y-k)) 
         
-
         if self.piece == "K": #updates the list of king moves possible and castling rights
             if self.c:
                 board.matew = self.moves
@@ -398,7 +394,6 @@ class piece:
         
         board.total_move_updater(self) #updates all possible moves for white and black after the piece's moves have been set
 
-
 b = bored()
 
 K1 = piece("K",7,4,1,b)
@@ -408,7 +403,6 @@ R1 = piece("R",7,0,1,b)
 R2 = piece("R",7,7,1,b)
 R1_ = piece("R",0,0,0,b)
 R2_ = piece("R",0,7,0,b) 
-
 
 N1 = piece("N",7,1,1,b)
 N2 = piece("N",7,6,1,b)
@@ -440,7 +434,6 @@ P5_ = piece("P",1,4,0,b)
 P6_ = piece("P",1,5,0,b)
 P7_ = piece("P",1,6,0,b)
 P8_ = piece("P",1,7,0,b)
-
 
 update_all(b)
 
